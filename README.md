@@ -1,31 +1,64 @@
-campuses.py:          stores the 3 campus search terms
+# CSU USAspending Demo
+A demo project that pulls grant data for three CSU campuses from the USAspending API using the Planetary Society's ORM, with plans to expand to all CSU campuses and eventually serve as the backend for a dashboard application.
 
-fetch_grants.py:      talks to USAspending
+## Purpose
+The long-term goal of this project is to make publicly available federal grant data for CSU campuses easier to explore and analyze through a lightweight dashboard interface.
 
-transform_grants.py:  converts ORM objects into clean rows
+Additionally, this project is intended to demonstrate the general workflow behind interacting with the USAspending API using the Planetary Society's ORM. The structure of this demo is meant to eventually extend to all CSU campuses as the foundation for a dashboard that enables easier interaction with USAspending grant data.
 
-main.py:              runs the demo
+Currently, the demo compiles grant information for San Luis Obispo, San Diego, and Channel Islands, including awarded grants and summary statistics on top awarding agencies and largest awards. The project is also intended to demonstrate the basic capabilities and workflow of working with the Planetary Society's ORM.
 
-output/:              stores generated CSV files
+## Walkthrough
+The few campuses included are outlined in campuses.py where I tie their reference name (like "San Luis Obispo") to their various aliases that appear in the USAspending API database (like "California Polytechnic State University" or often misspelled entries such as "San Diego State University Fou"). The fetch_grants.py file uses this list to determine what kind of API requests to send in, heavily relying on TPS' ORM. The pulled information is then converted into rows using transform_grants.py. Then, summary data is constructed with summarize_grants.py. The main.py file puts all of this together and prints the outputs in a somewhat readable way. 
 
-## Future Plans
-### Various Naming Schemes
+## Notes
+- At the bottom of main.py is commented out code that would save a copy of the tables printed as a .csv to the /output folder if one wanted to do this. This is mainly here for future plans where whichever dashboard tool I use will most likely want a .csv version of this information to interact with.
+- For demonstration purposes, main.py only pulls up to 5 awards for each of the various names related to each CSU. I have set it to default to just 5 grants so as to not add unnecessary work to the API just for the demo. This default can be changed by adding a parameter to the fetch_awards_for_recipient call in lines 23 to 26.
+```python
+awards = fetch_awards_for_recipient(
+    client,
+    approved_recipient_name
+)
+```
+currently defaults to a limit of 5, but can be changed to 
+```python
+awards = fetch_awards_for_recipient(
+    client,
+    approved_recipient_name,
+    limit=None
+)
+```
+or 
+```python
+awards = fetch_awards_for_recipient(
+    client,
+    approved_recipient_name,
+    limit=100
+)
+```
 
-- Campuses are referred to by many names. Ex: CSU Fresno shows up as "California State University, Fresno" or "California State University Fresno", notice the lack of a comma. 
-- Sometimes, one variant of a campus name confusingly shows up twice as distinct "recipients" in USASpending.gov. Ex: "California State University Fresno" shows up twice. In this specific example though, one of those appearances is only tied to one grant out of all 228 grants sent to the identical names. This seems to be due to the Recipient UEI not being provided, or the Recipient Location being very short (Fresno, CA, 93726 as opposed to 4910 N. Chestnut Ave, Fresno, CA, 93726 seen in many other grants).
-- I need to figure out which  recipient names I care about, and in the case that we care about many distinct names, I need to attribute all information from all the various names to one entity "CSU Fresno". 
+- It'd be great to also display an abbreviation like "NASA" but the ORM's .abbreviation strangely returns the agency code just like .code does. We can later hard code a dictionary of codes with their abbreviations so we can run something like .code.to_abbreviation where to_abbreviation would take the code and convert it to the correct abbreviation.
 
-### Types of Awards
+## Setup
+Requires Python 3.11+.
 
--Some money sent to universities comes from the government, but isn't a grant. I found some COVID relief loans. Not sure if these are desirable to view, or if they should be excluded. As of right now, I will exclude them. To include, just research through the various names for each CSU on usaspending.gov and allow awards from types other than grants.
+Clone the repository:
 
-### Agency Abbreviation
+```bash
+git clone https://github.com/LiamgDay/csu-usaspending-demo.git
+cd csu-usaspending-demo
+```
 
--It'd be great to also display an abbreviation like "NASA" but the orm's .abbreviation strangely returns the agency code just like .code does. 
--We can later hard code a dictionary of codes with their abbreviations so we can run something like .code.to_abbreviation where to_abbreviation would take the code and convert it to the correct abbreviation.
+Install dependencies:
 
-### .csv
+```bash
+pip install -r requirements.txt
+```
 
--Dashboard tools like streamlit and Power BI like to use data in the form of a .csv. There is capability to save the outputs as a .csv in the main file, it is currently commented out at the bottom of the file. By simply uncommenting it, it will save .csv's of only the api pulls (not the summarized data at this point) to the output folder.
+Run the project:
 
-This project uses the Planetary Society's `usaspending-orm` package to query and work with USAspending.gov award data.
+```bash
+python main.py
+```
+
+This project uses the Planetary Society's `usaspending-ORM` package to query and work with USAspending.gov award data.
