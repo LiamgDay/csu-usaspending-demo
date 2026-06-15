@@ -62,4 +62,5 @@ python main.py
 ```
 
 This project uses the Planetary Society's `usaspending-ORM` package to query and work with USAspending.gov award data.
+
 This project was developed with the assitance of Claude.
